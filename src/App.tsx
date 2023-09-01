@@ -1,41 +1,34 @@
-import React, { useState } from "react";
-import { Counter } from "./Counter";
+import './App.scss';
 
-export const App = () => {
-  const [history, setHistory] = useState<number[]>([]);
-  const [count, setCount] = useState(0);
-  const [query, setQuery] = useState('');
+import postsFromServer from './api/posts.json';
+import commentsFromServer from './api/comments.json';
+import usersFromServer from './api/users.json';
+import { PostList } from './components/PostList';
+import { User } from './types/User';
+import { Comment } from './types/Comment';
+import { Post } from './types/Post';
 
-  function saveCount(value: number) {
-    setCount(value);
-    setHistory(currentHistory => [...currentHistory, value]);
-  }
+function getUserById(userId: number): User | null {
+  return usersFromServer.find(user => user.id === userId)
+    || null;
+}
 
-  const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value)
-  }
+function getCommentById(id: number): Comment[] {
+  return commentsFromServer.filter(comment => comment.postId === id)
+    || null;
+}
 
-  return (
-    <div className="App">
-      <h1>Mate academy {count} </h1>
+const posts: Post[] = postsFromServer.map(post => ({
+  ...post,
+  user: getUserById(post.userId),
+  comments: getCommentById(post.id),
+}));
 
-      <div className="box">
-        <input
-          type="text"
-          onChange={handleQueryChange}
-        />
+export const App = () => (
+  <section className="App">
+    <h1 className="App__title">Static list of posts</h1>
 
-        {query}
-      </div>
+    <PostList posts={posts} />
 
-      <Counter
-        value={count}
-        onChange={saveCount}
-      />
-
-      <div className="box">
-        {history.join(', ') || 'No history yet'}
-      </div>
-    </div>
-  );
-};
+  </section>
+);
